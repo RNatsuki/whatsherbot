@@ -45,7 +45,7 @@ export class WPPConnect extends ProviderClass {
    * @param phone the phone number to send the message
    * @param data  the message to send (text)
    */
-  async sendMessage(phone: number, data: string): Promise<void> {
+  async sendMessage(phone: string, data: string): Promise<void> {
     await this.clientIsReady;
 
     if (!this.client) {
@@ -60,7 +60,7 @@ export class WPPConnect extends ProviderClass {
    * @param url the url of the image or the path of the image
    * @param text the text to send with the image
    */
-  async sendImage(phone: number, url: URL | string): Promise<void> {
+  async sendImage(phone: string, url: URL | string): Promise<void> {
     await this.clientIsReady;
 
     if (!this.client) {

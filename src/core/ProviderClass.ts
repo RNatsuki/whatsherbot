@@ -29,8 +29,8 @@ abstract class ProviderClass extends EventEmitter {
   }
 
   abstract init(): Promise<any>;
-  abstract sendMessage(phone: number, data: string): void;
-  abstract sendImage(phone: number, url: URL | string): Promise<void>;
+  abstract sendMessage(phone: string, data: string): void;
+  abstract sendImage(phone: string, url: URL | string): Promise<void>;
 }
 
 export { ProviderClass };

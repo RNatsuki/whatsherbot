@@ -1,4 +1,5 @@
 import { ProviderClass } from "../core/ProviderClass";
+import { IncommingMessage } from "../core/types";
 import { Flow } from "./types";
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -13,7 +14,7 @@ export class Bot {
     this.provider.on("message", this.handleMessage.bind(this));
   }
 
-  private async handleMessage(message: any) {
+  private async handleMessage(message: IncommingMessage) {
     const {
       body,
       from,
@@ -41,12 +42,12 @@ export class Bot {
     });
 
     const sendResponse = (response: string) => {
-      this.provider.sendMessage(from.split("@").shift(), response);
+      this.provider.sendMessage(from.split("@").shift() as string, response);
     };
 
 
     const sendImage = (media: string) => {
-      this.provider.sendImage(from.split("@").shift(), media);
+      this.provider.sendImage(from.split("@").shift() as string, media);
     }
 
     if (flow) {
@@ -55,7 +56,7 @@ export class Bot {
       }
 
       for (const answer of flow.answer) {
-        this.provider.sendMessage(from.split("@").shift(), answer);
+        this.provider.sendMessage(from.split("@").shift() as string, answer);
         await delay(800);
       }
     }
