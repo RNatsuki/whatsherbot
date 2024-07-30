@@ -1,11 +1,14 @@
 import { ProviderClass } from "../core/ProviderClass";
 import { IncommingMessage } from "../core/types";
 import { delay } from "../utils";
+import { EVENTS } from "./flow";
 import { Flow } from "./types";
 
 export class Bot {
   private provider: ProviderClass;
   private flows: Flow[] = [];
+  private isFlowActive: boolean = false;
+  private messageQueue: IncommingMessage[] = [];
 
   constructor(provider: ProviderClass) {
     this.provider = provider;
@@ -13,12 +16,29 @@ export class Bot {
   }
 
   private async handleMessage(message: IncommingMessage) {
+    if (this.isFlowActive) {
+      this.messageQueue.push(message);
+      return;
+    }
+
+    this.isFlowActive = true;
+
     const data = this.extractDataFromMessage(message);
-    const flow = this.findMatchingFlow(data.body);
+    const flow = this.findMatchingFlow(data.body) || this.flows.find(flow => flow.keywords.includes(EVENTS.WELCOME));
 
     if (flow) {
       await this.executeFlowActions(flow, data as any);
       await this.sendFlowAnswers(flow, data.from as any);
+    }
+
+    this.isFlowActive = false;
+    this.processQueue();
+  }
+
+  private processQueue() {
+    if (this.messageQueue.length > 0) {
+      const nextMessage = this.messageQueue.shift();
+      this.handleMessage(nextMessage!);
     }
   }
 

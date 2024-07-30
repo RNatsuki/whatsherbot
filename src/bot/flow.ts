@@ -1,5 +1,10 @@
 import { Flow } from "./types";
 
+
+export enum EVENTS {
+  WELCOME = "welcome-event-response-all-keywords",
+}
+
 export class FlowImp implements Flow {
   id: string;
   keywords: (string | RegExp)[];
