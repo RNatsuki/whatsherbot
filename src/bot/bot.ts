@@ -44,7 +44,7 @@ export class Bot {
   private async executeFlowActions(flow: Flow, data: { body: string, from: string, name: string }) {
     const sendResponse = (response: string) => this.provider.sendMessage(data.from, response);
     const sendImage = (media: string) => this.provider.sendImage(data.from, media);
-    const goToFlow = (flowId: string) => this.goToFlow(flowId, data);
+    const goToFlow = (flowId: string | Flow) => this.goToFlow(typeof flowId === "string" ? flowId : flowId.id, data);
 
     for (const action of flow.actions) {
       await action({ data, sendResponse, sendImage, goToFlow });
