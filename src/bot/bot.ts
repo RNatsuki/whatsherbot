@@ -1,8 +1,8 @@
 import { ProviderClass } from "../core/ProviderClass";
 import { IncommingMessage } from "../core/types";
+import { delay } from "../utils";
 import { Flow } from "./types";
 
-const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 
 export class Bot {
