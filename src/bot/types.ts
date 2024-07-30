@@ -3,6 +3,7 @@ export interface ActionContext {
   data: { body: string, from: string, name: string };
   sendResponse: (response: string) => void;
   sendImage: (media: string) => void;
+  goToFlow: (flowId: string) => void;
 }
 
 export type flowAction = (context: ActionContext) => void;

@@ -3,8 +3,6 @@ import { IncommingMessage } from "../core/types";
 import { delay } from "../utils";
 import { Flow } from "./types";
 
-
-
 export class Bot {
   private provider: ProviderClass;
   private flows: Flow[] = [];
@@ -15,61 +13,64 @@ export class Bot {
   }
 
   private async handleMessage(message: IncommingMessage) {
-    const {
-      body,
-      from,
-      sender: { name },
-    } = message;
-    const data = { body, from: from.split('@').shift(), name };
-
-    const flow = this.flows.find((flow) => {
-      return flow.keywords.some((keyword: any) => {
-        if (keyword instanceof RegExp) {
-          return keyword.test(data.body);
-        }
-
-        if (typeof keyword === "object") {
-          return keyword.some((k: any) => {
-            if (k instanceof RegExp) {
-              return k.test(data.body);
-            }
-            return data.body.includes(k);
-          });
-        }
-
-        return data.body.includes(keyword);
-      });
-    });
-
-    const sendResponse = (response: string) => {
-      this.provider.sendMessage(data.from as string, response);
-    };
-
-
-    const sendImage = (media: string) => {
-      this.provider.sendImage(data.from as string, media);
-    }
+    const data = this.extractDataFromMessage(message);
+    const flow = this.findMatchingFlow(data.body);
 
     if (flow) {
-      for (const action of flow.actions) {
-        await action({ data, sendResponse, sendImage });
-      }
+      await this.executeFlowActions(flow, data as any);
+      await this.sendFlowAnswers(flow, data.from as any);
+    }
+  }
 
-      for (const answer of flow.answer) {
-        this.provider.sendMessage(data.from as string, answer);
-        await delay(800);
-      }
+  private extractDataFromMessage(message: IncommingMessage) {
+    const { body, from, sender: { name } } = message;
+    return { body, from: from.split("@").shift(), name };
+  }
+
+  private findMatchingFlow(body: string) {
+    return this.flows.find(flow => flow.keywords.some(keyword => this.keywordMatches(keyword, body)));
+  }
+
+  private keywordMatches(keyword: any, body: string): boolean {
+    if (keyword instanceof RegExp) {
+      return keyword.test(body);
+    }
+    if (Array.isArray(keyword)) {
+      return keyword.some(k => this.keywordMatches(k, body));
+    }
+    return body.includes(keyword);
+  }
+
+  private async executeFlowActions(flow: Flow, data: { body: string, from: string, name: string }) {
+    const sendResponse = (response: string) => this.provider.sendMessage(data.from, response);
+    const sendImage = (media: string) => this.provider.sendImage(data.from, media);
+    const goToFlow = (flowId: string) => this.goToFlow(flowId, data);
+
+    for (const action of flow.actions) {
+      await action({ data, sendResponse, sendImage, goToFlow });
+    }
+  }
+
+  private async sendFlowAnswers(flow: Flow, from: string) {
+    for (const answer of flow.answer) {
+      this.provider.sendMessage(from, answer);
+      await delay(800);
+    }
+  }
+
+  private goToFlow(flowId: string, data: { body: string, from: string, name: string }) {
+    const flow = this.flows.find(flow => flow.id === flowId);
+    if (flow) {
+      this.executeFlowActions(flow, data);
+      this.sendFlowAnswers(flow, data.from);
     }
   }
 
   addFlow(flow: Flow[] | Flow) {
     if (Array.isArray(flow)) {
-      flow.forEach((f) => {
-        this.flows.push(f);
-      });
-      return;
+      this.flows.push(...flow);
+    } else {
+      this.flows.push(flow);
     }
-
-    this.flows.push(flow);
   }
 }
