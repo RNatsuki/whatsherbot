@@ -20,7 +20,7 @@ export class Bot {
       from,
       sender: { name },
     } = message;
-    const data = { body, from, name };
+    const data = { body, from: from.split('@').shift(), name };
 
     const flow = this.flows.find((flow) => {
       return flow.keywords.some((keyword: any) => {
@@ -42,12 +42,12 @@ export class Bot {
     });
 
     const sendResponse = (response: string) => {
-      this.provider.sendMessage(from.split("@").shift() as string, response);
+      this.provider.sendMessage(data.from as string, response);
     };
 
 
     const sendImage = (media: string) => {
-      this.provider.sendImage(from.split("@").shift() as string, media);
+      this.provider.sendImage(data.from as string, media);
     }
 
     if (flow) {
@@ -56,7 +56,7 @@ export class Bot {
       }
 
       for (const answer of flow.answer) {
-        this.provider.sendMessage(from.split("@").shift() as string, answer);
+        this.provider.sendMessage(data.from as string, answer);
         await delay(800);
       }
     }
