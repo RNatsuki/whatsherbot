@@ -33,6 +33,7 @@ export class WPPConnect extends ProviderClass {
       });
       this.emit("ready");
       this.client.onMessage((message) => {
+        if(message.from === "status") return
         this.emit("message", { ...message });
       });
       return Promise.resolve();
